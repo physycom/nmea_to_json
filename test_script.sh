@@ -1,6 +1,6 @@
 #!/bin/bash
-CONVERTER="./xml.exe"
-for kml in *.kml; do
-	out="${kml%.*}.json"
-	$CONVERTER -i $kml -o $out
+CONVERTER="./nmea_to_json.exe"
+for ubx in *.ubx; do
+	out="${ubx%.*}.json"
+	$CONVERTER -i $ubx -o $out
 done
