@@ -9,6 +9,15 @@ using namespace jsoncons;
 #define MAJOR_VERSION						1
 #define MINOR_VERSION						0
 
+/*
+TODO
+- fix unità di misura
+- districare la questione dell'encoding delle sentence
+- il chip UBX non butta NMEA standard
+
+*/
+
+
 /***********************************************************************************************************/
 /* ((Read_NMEA)) Reads lat-lon-alt data from NMEA file                                                     */
 
