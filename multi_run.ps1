@@ -1,7 +1,7 @@
 $invocation = (Get-Variable MyInvocation).Value
 $pwd = Split-Path $invocation.MyCommand.Path
 
-$converter = ".\nmea_to_json.exe"
+$converter = ".\nmea2json.exe"
 
 $FILES_INPUT = Get-ChildItem $pwd -Filter *.ubx
 foreach($file_in in $FILES_INPUT)

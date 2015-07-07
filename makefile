@@ -1,4 +1,4 @@
-EXE = nmea_to_json.exe
+EXE = nmea2json.exe
 
 all:
 	g++ -std=c++11 -o $(EXE) -I. nmea_to_json.cpp -fpermissive
