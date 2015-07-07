@@ -14,7 +14,6 @@ using namespace jsoncons;
 
 int main( int argc, char** argv)
 {
-	cout << argc << endl; 
 // Usage
 	std::cout << "Nmea_to_Json v" << MAJOR_VERSION << "." << MINOR_VERSION << std::endl;
   std::cout << "Usage: " << argv[0] << " -i [input] -o [output.json]" << std::endl;
