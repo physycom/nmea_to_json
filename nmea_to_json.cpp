@@ -51,7 +51,7 @@ int main( int argc, char** argv)
   ifstream input_file;
 
   if( input_name=="" ){
-  	std::cout << "INPUT file not recognized. Quitting..." << std::endl;
+  	std::cout << "INPUT file missing. Quitting..." << std::endl;
   	exit(2);
   }
   input_file.open(input_name.c_str());  
@@ -62,15 +62,21 @@ int main( int argc, char** argv)
   }
   else { cout << "SUCCESS: file " << input_name << " opened!\n"; }
 
-  if( !(output_name=="") && !( output_name.substr(output_name.size()-5,5)==".json") ){
-  	std::cout << "OUTPUT file or format not recognized. Quitting..." << std::endl;
-  	exit(3);
+  if( output_name.size() > 5 ){
+    if( output_name.substr(output_name.size()-5,5)!=".json" ){
+      std::cout << output_name << " is not a valid .json file. Quitting..." << std::endl;
+      exit(3);
+    }
+  }
+  else{
+    std::cout << output_name << " is not a valid .json file. Quitting..." << std::endl;
+    exit(33);
   }
   output_file.open(output_name.c_str());
   if (!output_file.is_open()) {
     cout << "FAILED: Output file " << output_name << " could not be opened." << endl;
     cout << "Hit ENTER to close.\n"; cin.get();
-    exit(33);
+    exit(333);
   }
   else { cout << "SUCCESS: file " << output_name << " opened!\n"; }
 
