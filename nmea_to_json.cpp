@@ -1,3 +1,22 @@
+/* Copyright 2015 - Alessandro Fabbri, Stefano Sinigardi, Giulia Venturi */
+
+/***************************************************************************
+This file is part of nmea_to_json.
+
+nmea_to_json is free software : you can redistribute it and / or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+nmea_to_json is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with nmea_to_json. If not, see <http://www.gnu.org/licenses/>.
+***************************************************************************/
+
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -12,16 +31,11 @@ using namespace boost::algorithm;
 #define MAJOR_VERSION          2
 #define MINOR_VERSION          0
 
-/***********************************************************************
- * ((Read_NMEA)) Reads lat-lon-alt data from NMEA file                 *
- ***********************************************************************/
-
 int checksum(const char *s) {
     int c = 0;
     while(*s)  c ^= *s++;
     return c;
 }
-
 
 int main(int argc, char** argv)
 {
