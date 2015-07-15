@@ -1,7 +1,7 @@
 ### Installation
 **Make** and a **C++11** compatible compiler are required. Clone the repo and type ``make all`` in your favourite shell.
 
-Uses jsoncons library (https://github.com/danielaparker/jsoncons) and RapidXml (http://rapidxml.sourceforge.net/).
+Uses jsoncons library (https://github.com/danielaparker/jsoncons) and the boost C++ libraries (http://www.boost.org/).
 
 ### Usage
 ```
