@@ -41,12 +41,14 @@ int main(int argc, char** argv)
 {
   // Usage
   std::cout << "Nmea_to_Json v" << MAJOR_VERSION << "." << MINOR_VERSION << std::endl;
-  std::cout << "Usage: " << argv[0] << " -i [input] -o [output.json]" << std::endl;
+  std::cout << "Usage: " << argv[0] << " -i [input] -o [output.json] -f [output format specifier]" << std::endl;
   std::cout << "\t- [input] NMEA encoded ascii file to parse" << std::endl;
   std::cout << "\t- [output.json] json location to store parsed file" << std::endl;
+  std::cout << "\t- [format specifier] use 'a' (without quotes) for array json, 'o' for object json" << std::endl;
+  std::cout << "\t- -f is optional, if omitted the output format will default to object-style" << std::endl;
 
   // Parsing command line
-  std::string input_name, output_name;
+  std::string input_name, output_name, outjson_type{};
   if (argc > 2){ /* Parse arguments, if there are arguments supplied */
     for (int i = 1; i < argc; i++){
       if ((argv[i][0] == '-') || (argv[i][0] == '/')){       // switches or options...
@@ -56,6 +58,9 @@ int main(int argc, char** argv)
           break;
         case 'o':
           output_name = argv[++i];
+          break;
+        case 'f':
+          outjson_type = argv[++i];
           break;
         default:    // no match...
           std::cout << "Flag \"" << argv[i] << "\" not recognized. Quitting..." << std::endl;
@@ -104,7 +109,16 @@ int main(int argc, char** argv)
   int gps_record_counter = 0;
   std::stringstream ss;
   std::string record_name;
+
   json outjson;
+  // decide output type
+  if(outjson_type == "a") //array
+    outjson = jsoncons::json(jsoncons::json::an_array);
+  else if(outjson_type == "o" || outjson_type == "") {} //object or omitted
+  else {
+    std::cout << "Output type not recognized. Quitting..." << std::endl;
+    exit(4);
+  }
 
   // try with standard GPRMC
   std::cout << "Looking for $GPRMC NMEA data" << std::endl;
@@ -151,7 +165,9 @@ int main(int argc, char** argv)
             ss.seekp(0, std::ios::beg);
             ss << std::setfill('0') << std::setw(7) << gps_record_counter;
             record_name = "gps_record_" + ss.str();
-            outjson[record_name] = ijson;
+
+            if(outjson.is_array()) outjson.add(ijson);
+            else outjson[record_name] = ijson;
           } 
         }
       }
@@ -192,7 +208,9 @@ int main(int argc, char** argv)
             ss.seekp(0, std::ios::beg);
             ss << std::setfill('0') << std::setw(7) << gps_record_counter;
             record_name = "gps_record_" + ss.str();
-            outjson[record_name] = ijson;
+
+            if(outjson.is_array()) outjson.add(ijson);
+            else outjson[record_name] = ijson;
           } 
         }
       }
@@ -233,7 +251,9 @@ int main(int argc, char** argv)
           ss.seekp(0, std::ios::beg);
           ss << std::dec << std::setfill('0') << std::setw(7) << gps_record_counter;
           record_name = "gps_record_" + ss.str();
-          outjson[record_name] = ijson;
+
+          if(outjson.is_array()) outjson.add(ijson);
+          else outjson[record_name] = ijson;
         } 
       }
     }

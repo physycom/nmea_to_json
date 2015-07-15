@@ -1,11 +1,16 @@
 ### Installation
 **Make** and a **C++11** compatible compiler are required. Clone the repo and type ``make all`` in your favourite shell.
 
+Uses jsoncons library (https://github.com/danielaparker/jsoncons) and RapidXml (http://rapidxml.sourceforge.net/).
+
 ### Usage
 ```
-nmea2json.exe -i input -o output.json
+nmea2json.exe -i input -o output.json -f [output style, 'a' (no quotes) for array or 'o' for object]
 ```
 where *input* must be an existing NMEA ascii-encoded file while *output.json* is the name of the output archive.
+
+The optional -f specifies the style of the output json file (see below for an example). If omitted, the object-style will be used.
+
 
 ### Input Samples
 ###### Sample #1
@@ -25,6 +30,7 @@ $GNGGA,135148.20,4429.97639,N,01121.21050,E,1,08,1.63,41.9,M,45.5,M,,*72
 ```
 
 ### Output Sample
+Object-style:
 ```
 {
     "gps_record_0000001":
@@ -36,8 +42,21 @@ $GNGGA,135148.20,4429.97639,N,01121.21050,E,1,08,1.63,41.9,M,45.5,M,,*72
     {
         "lat":44.5021381,
         "lon":11.3648768
-    },
+    }
 }
+```
+array-style:
+```
+[
+    {
+        "lat":44.5021611,
+        "lon":11.3648926
+    },
+    {
+        "lat":44.5021381,
+        "lon":11.3648768
+    }
+]
 ```
 
 Brought to you with :heart: by:
