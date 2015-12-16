@@ -27,9 +27,12 @@ along with nmea_to_json. If not, see <http://www.gnu.org/licenses/>.
 using namespace jsoncons;
 using namespace boost::algorithm;
 
-
-#define MAJOR_VERSION          2
+#define MAJOR_VERSION          3
 #define MINOR_VERSION          0
+
+#define DELTA_SEC_EPOCH           946684800                              // seconds from 1/1/1970:00:00:00 to 31/12/1999:23:59:59
+#define SEC_IN_HOUR               3600
+#define DELTA_H_UTC_TO_ROME       1
 
 int checksum(const char *s) {
     int c = 0;
@@ -37,18 +40,22 @@ int checksum(const char *s) {
     return c;
 }
 
+void usage(char * progname){
+  std::cout << "Usage: " << progname << " -i [input] -o [output.json] -f [output format specifier] -d [date]" << std::endl;
+  std::cout << "\t- [input] NMEA encoded ascii file to parse" << std::endl;
+  std::cout << "\t- [output.json] json location to store parsed file" << std::endl;
+  std::cout << "\t- [format specifier optional] use 'a' (without quotes) for array json, 'o' for object json" << std::endl;
+  std::cout << "\t- [date] enter input date in the format dd:mm:aaaa" << std::endl;
+  exit(1);
+}
+
 int main(int argc, char** argv)
 {
   // Usage
   std::cout << "Nmea_to_Json v" << MAJOR_VERSION << "." << MINOR_VERSION << std::endl;
-  std::cout << "Usage: " << argv[0] << " -i [input] -o [output.json] -f [output format specifier]" << std::endl;
-  std::cout << "\t- [input] NMEA encoded ascii file to parse" << std::endl;
-  std::cout << "\t- [output.json] json location to store parsed file" << std::endl;
-  std::cout << "\t- [format specifier] use 'a' (without quotes) for array json, 'o' for object json" << std::endl;
-  std::cout << "\t- -f is optional, if omitted the output format will default to object-style" << std::endl;
 
   // Parsing command line
-  std::string input_name, output_name, outjson_type{};
+  std::string input_name, output_name, outjson_type{}, date;
   if (argc > 2){ /* Parse arguments, if there are arguments supplied */
     for (int i = 1; i < argc; i++){
       if ((argv[i][0] == '-') || (argv[i][0] == '/')){       // switches or options...
@@ -62,20 +69,23 @@ int main(int argc, char** argv)
         case 'f':
           outjson_type = argv[++i];
           break;
+        case 'd':
+          date = argv[++i];
+          break;
         default:    // no match...
           std::cout << "Flag \"" << argv[i] << "\" not recognized. Quitting..." << std::endl;
-          exit(1);
+          usage(argv[0]);
         }
       }
       else {
         std::cout << "Flag \"" << argv[i] << "\" not recognized. Quitting..." << std::endl;
-        exit(11);
+        usage(argv[0]);
       }
     }
   }
   else {
-    std::cout << "No flags specified. Read usage and relaunch properly." << std::endl;
-    exit(111);
+    std::cout << "ERROR : No flags specified." << std::endl;
+    usage(argv[0]);
   }
 
   // Safety checks for file manipulations
@@ -103,12 +113,25 @@ int main(int argc, char** argv)
     std::cout << output_name << " is not a valid .json file. Quitting..." << std::endl;
     exit(33);
   }
+  if( date == "" ){
+    std::cout << "No DATE specified. Quitting..." << std::endl;
+    exit(333);
+  }
+
+  // Setting date in struct tm
+  struct tm tm_time;
+  std::vector<std::string> datev;
+  split(datev,date,is_any_of(":"));
+  tm_time.tm_mday = atoi(datev[0].c_str());
+  tm_time.tm_mon = atoi(datev[1].c_str())-1;
+  tm_time.tm_year = atoi(datev[2].c_str()) - 1900;
 
   // NMEA parser
   std::vector<std::vector <std::string>> file_tokens, file_sentences;
   int gps_record_counter = 0;
   std::stringstream ss;
   std::string record_name;
+  int h, m ,s, nano; 
 
   json outjson;
   // decide output type
@@ -121,6 +144,8 @@ int main(int argc, char** argv)
   }
 
   // try with standard GPRMC
+  // sample string
+  // $GPRMC,135221.000,V,4429.94755,N,01121.18915,E,0.0,-18.4,300615,,E*40
   std::cout << "Looking for $GPRMC NMEA data" << std::endl;
   std::string line;
   while (std::getline(input_file, line, '$')) {
@@ -137,7 +162,7 @@ int main(int argc, char** argv)
       if (tokens[0] == "GPRMC") {
         //if ( tokens[2] == "V") continue;            // "Void" code -> data rejected
         if (tokens[2] == "A") {                       // "Accept" code
-          double lat, lon;
+          double lat, lon, timestamp;
           // non valid for lat/lon<10 and for lon>99
           //lat = stod(tokens[3].substr(0,2)) + stod(tokens[3].substr(2))/60.0;
           //lon = stod(tokens[5].substr(0,2)) + stod(tokens[5].substr(2))/60.0;
@@ -146,11 +171,24 @@ int main(int argc, char** argv)
           lati = atoi(tokens[3].c_str())/100;
           loni = atoi(tokens[5].c_str())/100;
           lat = atof(tokens[3].c_str())/100.0 - (double)lati;
-          lat /= 60.0;
+          lat /= 60.0/100.0;
           lat += (double) lati;
           lon = atof(tokens[5].c_str())/100.0 - (double)loni;
-          lon /= 60.0;
+          lon /= 60.0/100.0;
           lon += (double) loni;
+
+          timestamp = atof(tokens[1].c_str());
+          h = timestamp/1e4;
+          m = (timestamp-h*1e4)/1e2;
+          s = (timestamp-h*1e4-m*1e2);
+          nano = (timestamp-h*1e4-m*1e2-s)*1e2;
+  
+          tm_time.tm_hour = h;
+          tm_time.tm_min = m;
+          tm_time.tm_sec = s;
+  
+          time_t timestamp_int = mktime(&tm_time) + SEC_IN_HOUR  - DELTA_SEC_EPOCH;       // mktime converts from local time to gmt so we add one hour explicitly
+          timestamp = timestamp_int + nano/1e2;          
 
           ss << std::hex << checksum(sentences[0].c_str() );
           std::transform(tokens[12].begin(), tokens[12].end(), tokens[12].begin(), ::tolower);
@@ -160,6 +198,7 @@ int main(int argc, char** argv)
             ijson["description"] = sentences[0];
             ijson["lat"] = lat;
             ijson["lon"] = lon;
+            ijson["timestamp"] = timestamp;
 
             ss.str("\0");
             ss.seekp(0, std::ios::beg);
@@ -178,6 +217,8 @@ int main(int argc, char** argv)
   if (gps_record_counter) std::cout << "Found " << gps_record_counter << " gps record of type $GPRMC" << std::endl;
 
   // fallback to uBlox GNRMC
+  // sample string
+  // $GNRMC,140502.20,A,4430.12967,N,01121.89356,E,7.201,56.95,300615,,,A*40
   if (!gps_record_counter) {
     std::cout << "No valid $GPRMC NMEA data, falling back to $GNRMC" << std::endl;
     for(size_t i=0; i < file_sentences.size(); i++){
@@ -186,14 +227,22 @@ int main(int argc, char** argv)
 
       if (file_tokens[i][0] == "GNRMC") {
         if (file_tokens[i][2] == "A") {
-          double lat, lon;
+          double lat, lon, timestamp;
           lat = 1e-2*atof(file_tokens[i][3].c_str());
           lon = 1e-2*atof(file_tokens[i][5].c_str());
 
-          json ijson;
-          ijson["description"] = file_sentences[i][0];
-          ijson["lat"] = lat;
-          ijson["lon"] = lon;
+          timestamp = atof(file_tokens[i][1].c_str());
+          h = timestamp/1e4;
+          m = (timestamp-h*1e4)/1e2;
+          s = (timestamp-h*1e4-m*1e2);
+          nano = (timestamp-h*1e4-m*1e2-s)*1e2;
+  
+          tm_time.tm_hour = h;
+          tm_time.tm_min = m;
+          tm_time.tm_sec = s;
+  
+          time_t timestamp_int = mktime(&tm_time) + SEC_IN_HOUR  - DELTA_SEC_EPOCH;         // mktime converts from local time to gmt so we add one hour explicitly
+          timestamp = timestamp_int + nano/1e2;          
 
           ss << std::hex << checksum(file_sentences[i][0].c_str() );
           std::transform(file_tokens[i][13].begin(), file_tokens[i][13].end(), file_tokens[i][13].begin(), ::tolower);
@@ -203,6 +252,7 @@ int main(int argc, char** argv)
             ijson["description"] = file_sentences[i][0];
             ijson["lat"] = lat;
             ijson["lon"] = lon;
+            ijson["timestamp"] = timestamp;
 
             ss.str("\0");
             ss.seekp(0, std::ios::beg);
@@ -218,25 +268,42 @@ int main(int argc, char** argv)
     if (gps_record_counter) std::cout << "Found " << gps_record_counter << " gps record of type $GNRMC" << std::endl;
   }
 
+  // fallback to GNGGA
+  // sample string
+  // $GNGGA,135148.00,4429.97640,N,01121.21051,E,1,08,1.63,41.9,M,45.5,M,,*7F
   if(!gps_record_counter){
-    std::cout << "No valid $GNRMC NMEA data, falling back to $GNGGA" << std::endl;
-
+    std::cout << "No valid $GNRMC NMEA data, falling back to $GNGGA NMEA" << std::endl;
     for(size_t i=0; i < file_sentences.size(); i++){
       ss.str("\0");
       ss.seekp(0, std::ios::beg);
 
       if (file_tokens[i][0] == "GNGGA") {
-        double lat, lon;
+        double lat, lon, timestamp;
 
         int lati, loni;
         lati = atoi(file_tokens[i][2].c_str())/100;
         loni = atoi(file_tokens[i][4].c_str())/100;
         lat = atof(file_tokens[i][2].c_str())/100.0 - (double)lati;
-        lat /= 60.0;
+        lat /= 60.0/100.0;
         lat += (double) lati;
         lon = atof(file_tokens[i][4].c_str())/100.0 - (double)loni;
-        lon /= 60.0;
+        lon /= 60.0/100.0;
         lon += (double) loni;
+
+        timestamp = atof(file_tokens[i][1].c_str());
+        h = timestamp/1e4;
+        m = (timestamp-h*1e4)/1e2;
+        s = (timestamp-h*1e4-m*1e2);
+        nano = (timestamp-h*1e4-m*1e2-s)*1e2;
+
+        tm_time.tm_hour = h;
+        tm_time.tm_min = m;
+        tm_time.tm_sec = s;
+
+        time_t timestamp_int = mktime(&tm_time) + SEC_IN_HOUR - DELTA_SEC_EPOCH;        // mktime converts from local time to gmt so we add one hour explicitly
+        timestamp = timestamp_int + nano/1e2;
+
+//      std::cout << h << " " << m << "  " << s << "  " << nano  << "   " << timestamp_int <<  std::endl, fatto = true;   // in case of debug
 
         ss << std::hex << checksum(file_sentences[i][0].c_str() );
         std::transform(file_tokens[i][15].begin(), file_tokens[i][15].end(), file_tokens[i][15].begin(), ::tolower);
@@ -246,6 +313,12 @@ int main(int argc, char** argv)
           ijson["description"] = file_sentences[i][0];
           ijson["lat"] = lat;
           ijson["lon"] = lon;
+          ijson["timestamp"] = timestamp;
+        
+          std::stringstream human_time << tm_time->tm_mday << "/" << tm_time->tm_mon + 1 << "/" << tm_time->tm_year + 1900 << " "
+          << setw(2) << setfill('0') << tm_time->tm_hour + DELTA_H_UTC_TO_ROME << ":" << setw(2) << setfill('0') << tm_time->tm_min << ":"
+          << setw(2) << setfill('0') << tm_time->tm_sec << "." << nano/1e2;
+          record["date"] = human_time.str();
 
           ss.str("\0");
           ss.seekp(0, std::ios::beg);
