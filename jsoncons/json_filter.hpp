@@ -12,6 +12,7 @@
 
 #include "jsoncons/json_input_handler.hpp"
 #include "jsoncons/json_output_handler.hpp"
+#include "jsoncons/parse_error_handler.hpp"
 
 namespace jsoncons {
 

@@ -117,7 +117,8 @@ struct json_char_traits<char,1>
 
     static const std::string true_literal() {return "true";};
 
-    static uint32_t convert_char_to_codepoint(const char*& it, const char*)
+    static uint32_t convert_char_to_codepoint(const char*& it, 
+                                              const char*)
     {
         char c = *it;
         uint32_t u(c >= 0 ? c : 256 + c );
@@ -289,6 +290,38 @@ bool is_non_ascii_character(uint32_t c)
 {
     return c >= 0x80;
 }
+
+template <typename T>
+struct type_wrapper
+{
+    typedef T value_type;
+    typedef T& reference;
+    typedef const T& const_reference;
+};
+
+template <typename T>
+struct type_wrapper<const T>
+{
+    typedef T value_type;
+    typedef T& reference;
+    typedef const T& const_reference;
+};
+
+template <typename T>
+struct type_wrapper<T&>
+{
+    typedef T value_type;
+    typedef T& reference;
+    typedef const T& const_reference;
+};
+
+template <typename T>
+struct type_wrapper<const T&>
+{
+    typedef T value_type;
+    typedef T& reference;
+    typedef const T& const_reference;
+};
 
 }
 #endif

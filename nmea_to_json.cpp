@@ -17,6 +17,8 @@ You should have received a copy of the GNU General Public License
 along with nmea_to_json. If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
+#define _SCL_SECURE_NO_WARNINGS
+
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -28,7 +30,7 @@ using namespace jsoncons;
 using namespace boost::algorithm;
 
 #define MAJOR_VERSION          3
-#define MINOR_VERSION          0
+#define MINOR_VERSION          1
 
 #define DELTA_SEC_EPOCH           946684800                              // seconds from 1/1/1970:00:00:00 to 31/12/1999:23:59:59
 #define SEC_IN_HOUR               3600
@@ -178,10 +180,10 @@ int main(int argc, char** argv)
           lon += (double) loni;
 
           timestamp = atof(tokens[1].c_str());
-          h = timestamp/1e4;
-          m = (timestamp-h*1e4)/1e2;
-          s = (timestamp-h*1e4-m*1e2);
-          nano = (timestamp-h*1e4-m*1e2-s)*1e2;
+          h = int(timestamp/1e4);
+          m = int((timestamp-h*1e4)/1e2);
+          s = int((timestamp-h*1e4-m*1e2));
+          nano = int((timestamp-h*1e4-m*1e2-s)*1e2);
   
           tm_time.tm_hour = h;
           tm_time.tm_min = m;
@@ -232,10 +234,10 @@ int main(int argc, char** argv)
           lon = 1e-2*atof(file_tokens[i][5].c_str());
 
           timestamp = atof(file_tokens[i][1].c_str());
-          h = timestamp/1e4;
-          m = (timestamp-h*1e4)/1e2;
-          s = (timestamp-h*1e4-m*1e2);
-          nano = (timestamp-h*1e4-m*1e2-s)*1e2;
+          h = int(timestamp/1e4);
+          m = int((timestamp-h*1e4)/1e2);
+          s = int((timestamp-h*1e4-m*1e2));
+          nano = int((timestamp-h*1e4-m*1e2-s)*1e2);
   
           tm_time.tm_hour = h;
           tm_time.tm_min = m;
@@ -291,10 +293,10 @@ int main(int argc, char** argv)
         lon += (double) loni;
 
         timestamp = atof(file_tokens[i][1].c_str());
-        h = timestamp/1e4;
-        m = (timestamp-h*1e4)/1e2;
-        s = (timestamp-h*1e4-m*1e2);
-        nano = (timestamp-h*1e4-m*1e2-s)*1e2;
+        h = int(timestamp/1e4);
+        m = int((timestamp-h*1e4)/1e2);
+        s = int((timestamp-h*1e4-m*1e2));
+        nano = int((timestamp-h*1e4-m*1e2-s)*1e2);
 
         tm_time.tm_hour = h;
         tm_time.tm_min = m;

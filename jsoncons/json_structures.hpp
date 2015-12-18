@@ -167,7 +167,7 @@ private:
 template <typename Char, typename Alloc, bool IsConst = false>
 class object_iterator
 {
-    typedef typename basic_json<Char,Alloc>::member_type value_type;
+    typedef typename basic_json<Char,Alloc>::member_type value_types;
     typedef std::ptrdiff_t difference_type;
     typedef typename std::conditional<IsConst, const typename basic_json<Char,Alloc>::member_type*, typename basic_json<Char,Alloc>::member_type*>::type pointer;
     typedef typename std::conditional<IsConst, const typename basic_json<Char,Alloc>::member_type&, typename basic_json<Char,Alloc>::member_type&>::type reference;
@@ -194,12 +194,12 @@ class object_iterator
             return (it_->it_)->second;
         }
 
-        operator value_type() const
+        operator value_types() const
         {
-            return value_type(name(),value());
+            return value_types(name(),value());
         }
 
-        void operator =(value_type const& value)
+        void operator =(value_types const& value)
         {
           it_->invoke_(value);
         }
@@ -286,7 +286,7 @@ public:
     iterator_impl it_;
     typename basic_json<Char,Alloc>::member_type member_;
 
-    void invoke_(value_type const & value)
+    void invoke_(value_types const & value)
     {
         *it_ = value;
     }
@@ -339,12 +339,13 @@ public:
         auto it = std::lower_bound(members_.begin(),members_.end(), name, comp);
         return (it != members_.end() && it->first == name) ? iterator(it) : end();
     }
-
+ 
+    // Fixed by cperthuis
     const_iterator find(const std::basic_string<Char>& name) const
     {
         key_compare<Char,Alloc> comp;
         auto it = std::lower_bound(members_.begin(),members_.end(), name, comp);
-        return (it != members_.end() && it->name() == name) ? const_iterator(it) : end();
+        return (it != members_.end() && it->first == name) ? const_iterator(it) : end();
     }
 
     void remove_range(size_t from_index, size_t to_index) 
@@ -354,11 +355,12 @@ public:
         members_.erase(members_.begin()+from_index,members_.begin()+to_index);
     }
 
+    // Fixed by cperthuis
     void remove(const std::basic_string<Char>& name) 
     {
         key_compare<Char,Alloc> comp;
         auto it = std::lower_bound(members_.begin(),members_.end(), name, comp);
-        if (it != members_.end())
+        if (it != members_.end() && it->first == name)
         {
             members_.erase(it);
         }
@@ -367,11 +369,6 @@ public:
     const typename basic_json<Char,Alloc>::member_type& get(size_t i) const 
     {
         return members_[i];
-    }
-
-    void push_back(const std::basic_string<Char>& name, const basic_json<Char,Alloc>& val)
-    {
-        members_.push_back(typename basic_json<Char,Alloc>::member_type(name,val));
     }
 
     void set(const std::basic_string<Char>& name, const basic_json<Char,Alloc>& value)
@@ -389,16 +386,21 @@ public:
 
     void set(std::basic_string<Char>&& name, basic_json<Char,Alloc>&& value)
     {
-        auto it = std::lower_bound(begin(),end(),name ,key_compare<Char,Alloc>());
-        if (it != end() && it->name() == name)
+        auto it = std::lower_bound(members_.begin(),members_.end(),name ,key_compare<Char,Alloc>());
+        if (it != members_.end() && it->first == name)
         {
             *it = member_type(name,value);
         }
         else
         {
-            insert(it,member_type(name,value));
+            members_.insert(it,member_type(name,value));
         }
     }
+
+    /*void push_back(const std::basic_string<Char>& name, const basic_json<Char,Alloc>& val)
+    {
+        members_.push_back(member_type(name,val));
+    }*/
 
     void push_back(std::basic_string<Char>&& name, basic_json<Char,Alloc>&& val)
     {
@@ -452,7 +454,7 @@ public:
 
             auto rhs_it = std::lower_bound(rhs.members_.begin(), rhs.members_.end(), *it, member_compare<Char, Alloc>());
             // member_compare actually only compares keys, so we need to check the value separately
-            if (rhs_it == rhs.members_.end() || rhs_it->second != it->second)
+            if (rhs_it == rhs.members_.end() || rhs_it->first != it->first || rhs_it->second != it->second)
             {
                 return false;
             }

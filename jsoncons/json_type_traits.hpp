@@ -45,6 +45,7 @@ public:
     }
 };
 
+/*
 template<typename Char, typename Alloc>
 class json_type_traits<Char, Alloc, basic_json<Char, Alloc>>
 {
@@ -61,7 +62,7 @@ public:
     {
         val.swap(self);
     }
-};
+};*/
 
 template<typename Char, typename Alloc>
 class json_type_traits<Char, Alloc, typename basic_json<Char, Alloc>::any>
@@ -91,8 +92,7 @@ public:
     }
     const Char* as(const basic_json<Char, Alloc>& val) const
     {
-        JSONCONS_ASSERT(val.is_string());
-        return val.second.string_value_.c_str();
+        return val.value.as_c_str();
     }
     void assign(basic_json<Char, Alloc>& self, const Char *val)
     {
@@ -364,7 +364,7 @@ public:
     }
     void assign(basic_json<Char, Alloc>& self, long long val)
     {
-        self.assign_integer(val);
+        self.assign_longlong(val);
     }
 };
 
@@ -405,7 +405,7 @@ public:
     {
         return val.is_string() && val.as_string().size() == 1;
     }
-    char as(const basic_json<Char, Alloc>& val) const
+    Char as(const basic_json<Char, Alloc>& val) const
     {
         return val.as_char();
     }
@@ -432,7 +432,7 @@ public:
     }
     void assign(basic_json<Char, Alloc>& self, double val)
     {
-        self.assign_float(val);
+        self.assign_double(val);
     }
 };
 
