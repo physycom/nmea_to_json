@@ -30,7 +30,7 @@ using namespace jsoncons;
 using namespace boost::algorithm;
 
 #define MAJOR_VERSION          3
-#define MINOR_VERSION          1
+#define MINOR_VERSION          3
 
 #define DELTA_SEC_EPOCH           946684800                              // seconds from 1/1/1970:00:00:00 to 31/12/1999:23:59:59
 #define SEC_IN_HOUR               3600
@@ -223,7 +223,7 @@ int main(int argc, char** argv)
   // $GNRMC,140502.20,A,4430.12967,N,01121.89356,E,7.201,56.95,300615,,,A*40
   if (!gps_record_counter) {
     std::cout << "No valid $GPRMC NMEA data, falling back to $GNRMC" << std::endl;
-    for(size_t i=0; i < file_sentences.size(); i++){
+    for(size_t i=0; i < file_tokens.size(); i++){
       ss.str("\0");
       ss.seekp(0, std::ios::beg);
 
@@ -275,7 +275,7 @@ int main(int argc, char** argv)
   // $GNGGA,135148.00,4429.97640,N,01121.21051,E,1,08,1.63,41.9,M,45.5,M,,*7F
   if(!gps_record_counter){
     std::cout << "No valid $GNRMC NMEA data, falling back to $GNGGA NMEA" << std::endl;
-    for(size_t i=0; i < file_sentences.size(); i++){
+    for(size_t i=0; i < file_tokens.size(); i++){
       ss.str("\0");
       ss.seekp(0, std::ios::beg);
 
@@ -305,6 +305,7 @@ int main(int argc, char** argv)
         time_t timestamp_int = mktime(&tm_time) + SEC_IN_HOUR - DELTA_SEC_EPOCH;        // mktime converts from local time to gmt so we add one hour explicitly
         timestamp = timestamp_int + nano/1e2;
 
+
 //      std::cout << h << " " << m << "  " << s << "  " << nano  << "   " << timestamp_int <<  std::endl, fatto = true;   // in case of debug
 
         ss << std::hex << checksum(file_sentences[i][0].c_str() );
@@ -322,17 +323,6 @@ int main(int argc, char** argv)
           << std::setw(2) << std::setfill('0') << tm_time.tm_hour + DELTA_H_UTC_TO_ROME << ":" << std::setw(2) << std::setfill('0') << tm_time.tm_min << ":"
           << std::setw(2) << std::setfill('0') << tm_time.tm_sec << "." << std::setw(2) << std::setfill('0') << nano;
           ijson["date"] = human_time.str();
-
-
-
-
-          std::ofstream checktime("checktime.txt", std::fstream::app);
-          checktime << timestamp << tm_time.tm_hour << ":" << tm_time.tm_min << ":" << tm_time.tm_sec << "    " << timestamp_int << std::endl;
-          checktime.close();
-
-
-
-
 
           ss.str("\0");
           ss.seekp(0, std::ios::beg);

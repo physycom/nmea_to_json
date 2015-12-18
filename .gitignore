@@ -246,3 +246,5 @@ ui_*.h
 *.qmlproject.user.*
 *.json
 *.ubx
+*.iobj
+*.ipdb
