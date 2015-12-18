@@ -315,10 +315,11 @@ int main(int argc, char** argv)
           ijson["lon"] = lon;
           ijson["timestamp"] = timestamp;
         
-          std::stringstream human_time << tm_time->tm_mday << "/" << tm_time->tm_mon + 1 << "/" << tm_time->tm_year + 1900 << " "
-          << setw(2) << setfill('0') << tm_time->tm_hour + DELTA_H_UTC_TO_ROME << ":" << setw(2) << setfill('0') << tm_time->tm_min << ":"
-          << setw(2) << setfill('0') << tm_time->tm_sec << "." << nano/1e2;
-          record["date"] = human_time.str();
+          std::stringstream human_time;
+          human_time << tm_time.tm_mday << "/" << tm_time.tm_mon + 1 << "/" << tm_time.tm_year + 1900 << " "
+          << std::setw(2) << std::setfill('0') << tm_time.tm_hour + DELTA_H_UTC_TO_ROME << ":" << std::setw(2) << std::setfill('0') << tm_time.tm_min << ":"
+          << std::setw(2) << std::setfill('0') << tm_time.tm_sec << "." << nano/1e2;
+          ijson["date"] = human_time.str();
 
           ss.str("\0");
           ss.seekp(0, std::ios::beg);
