@@ -323,6 +323,17 @@ int main(int argc, char** argv)
           << std::setw(2) << std::setfill('0') << tm_time.tm_sec << "." << std::setw(2) << std::setfill('0') << nano;
           ijson["date"] = human_time.str();
 
+
+
+
+          std::ofstream checktime("checktime.txt", std::fstream::app);
+          checktime << timestamp << tm_time.tm_hour << ":" << tm_time.tm_min << ":" << tm_time.tm_sec << "    " << timestamp_int << std::endl;
+          checktime.close();
+
+
+
+
+
           ss.str("\0");
           ss.seekp(0, std::ios::beg);
           ss << std::dec << std::setfill('0') << std::setw(7) << gps_record_counter;
