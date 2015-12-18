@@ -320,7 +320,7 @@ int main(int argc, char** argv)
           std::stringstream human_time;
           human_time << tm_time.tm_mday << "/" << tm_time.tm_mon + 1 << "/" << tm_time.tm_year + 1900 << " "
           << std::setw(2) << std::setfill('0') << tm_time.tm_hour + DELTA_H_UTC_TO_ROME << ":" << std::setw(2) << std::setfill('0') << tm_time.tm_min << ":"
-          << std::setw(2) << std::setfill('0') << tm_time.tm_sec << "." << nano/1e2;
+          << std::setw(2) << std::setfill('0') << tm_time.tm_sec << "." << std::setw(2) << std::setfill('0') << nano;
           ijson["date"] = human_time.str();
 
           ss.str("\0");
