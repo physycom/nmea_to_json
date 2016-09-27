@@ -21,6 +21,7 @@ along with nmea_to_json. If not, see <http://www.gnu.org/licenses/>.
 
 #include <iostream>
 #include <string>
+
 #include <fstream>
 #include <algorithm>
 #include <boost/algorithm/string.hpp>
@@ -30,7 +31,7 @@ using namespace jsoncons;
 using namespace boost::algorithm;
 
 #define MAJOR_VERSION          3
-#define MINOR_VERSION          3
+#define MINOR_VERSION          4
 
 #define DELTA_SEC_EPOCH           946684800                              // seconds from 1/1/1970:00:00:00 to 31/12/1999:23:59:59
 #define SEC_IN_HOUR               3600
@@ -47,7 +48,7 @@ void usage(char * progname){
   std::cout << "\t- [input] NMEA encoded ascii file to parse" << std::endl;
   std::cout << "\t- [output.json] json location to store parsed file" << std::endl;
   std::cout << "\t- [format specifier optional] use 'a' (without quotes) for array json, 'o' for object json" << std::endl;
-  std::cout << "\t- [date] enter input date in the format dd:mm:aaaa" << std::endl;
+  std::cout << "\t- [date] enter input date in the format YYYYMMDD" << std::endl;
   exit(1);
 }
 
@@ -90,6 +91,16 @@ int main(int argc, char** argv)
     usage(argv[0]);
   }
 
+  // Setting date in struct tm
+  struct tm tm_time;
+  std::vector<std::string> datev;
+  datev.push_back(date.substr(0, 4));
+  datev.push_back(date.substr(4, 2));
+  datev.push_back(date.substr(6, 2));
+  tm_time.tm_year = atoi(datev[0].c_str()) - 1900;
+  tm_time.tm_mon = atoi(datev[1].c_str())-1;
+  tm_time.tm_mday = atoi(datev[2].c_str());
+
   // Safety checks for file manipulations
   std::ifstream input_file;
   if (input_name == ""){
@@ -99,8 +110,6 @@ int main(int argc, char** argv)
   input_file.open(input_name.c_str(), std::ios::binary);
   if (!input_file.is_open()) {
     std::cout << "FAILED: Input file " << input_name << " could not be opened." << std::endl;
-    std::cout << "Press a key to close.\n"; 
-    std::cin.get();
     exit(22);
   }
   else std::cout << "SUCCESS: file " << input_name << " opened!" << std::endl;
@@ -119,14 +128,6 @@ int main(int argc, char** argv)
     std::cout << "No DATE specified. Quitting..." << std::endl;
     exit(333);
   }
-
-  // Setting date in struct tm
-  struct tm tm_time;
-  std::vector<std::string> datev;
-  split(datev,date,is_any_of(":"));
-  tm_time.tm_mday = atoi(datev[0].c_str());
-  tm_time.tm_mon = atoi(datev[1].c_str())-1;
-  tm_time.tm_year = atoi(datev[2].c_str()) - 1900;
 
   // NMEA parser
   std::vector<std::vector <std::string>> file_tokens, file_sentences;
