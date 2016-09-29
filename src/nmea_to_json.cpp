@@ -190,7 +190,7 @@ int main(int argc, char** argv)
           tm_time.tm_min = m;
           tm_time.tm_sec = s;
   
-          time_t timestamp_int = mktime(&tm_time) + SEC_IN_HOUR  - DELTA_SEC_EPOCH;       // mktime converts from local time to gmt so we add one hour explicitly
+          time_t timestamp_int = mktime(&tm_time) + 2*SEC_IN_HOUR  - DELTA_SEC_EPOCH;       // mktime converts from local time to gmt so we add one hour explicitly
           timestamp = timestamp_int + nano/1e2;          
 
           ss << std::hex << checksum(sentences[0].c_str() );
@@ -244,7 +244,7 @@ int main(int argc, char** argv)
           tm_time.tm_min = m;
           tm_time.tm_sec = s;
   
-          time_t timestamp_int = mktime(&tm_time) + SEC_IN_HOUR  - DELTA_SEC_EPOCH;         // mktime converts from local time to gmt so we add one hour explicitly
+          time_t timestamp_int = mktime(&tm_time) + 2*SEC_IN_HOUR  - DELTA_SEC_EPOCH;         // mktime converts from local time to gmt so we add one hour explicitly
           timestamp = timestamp_int + nano/1e2;          
 
           ss << std::hex << checksum(file_sentences[i][0].c_str() );
@@ -303,7 +303,7 @@ int main(int argc, char** argv)
         tm_time.tm_min = m;
         tm_time.tm_sec = s;
 
-        time_t timestamp_int = mktime(&tm_time) + SEC_IN_HOUR - DELTA_SEC_EPOCH;        // mktime converts from local time to gmt so we add one hour explicitly
+        time_t timestamp_int = mktime(&tm_time) + 2*SEC_IN_HOUR - DELTA_SEC_EPOCH;        // mktime converts from local time to gmt so we add one hour explicitly
         timestamp = timestamp_int + nano/1e2;
 
 
