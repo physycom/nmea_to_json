@@ -190,8 +190,12 @@ int main(int argc, char** argv)
           tm_time.tm_min = m;
           tm_time.tm_sec = s;
   
-          time_t timestamp_int = mktime(&tm_time) + 2*SEC_IN_HOUR  - DELTA_SEC_EPOCH;       // mktime converts from local time to gmt so we add one hour explicitly
-          timestamp = timestamp_int + nano/1e2;          
+#ifdef __GNUC__
+          time_t timestamp_int = mktime(&tm_time) + 2 * SEC_IN_HOUR - DELTA_SEC_EPOCH;        // mktime converts from local time to gmt so we add one hour explicitly
+#else
+          time_t timestamp_int = mktime(&tm_time) + SEC_IN_HOUR - DELTA_SEC_EPOCH;        // mktime converts from local time to gmt so we add one hour explicitly
+#endif
+          timestamp = timestamp_int + nano/1e2;
 
           ss << std::hex << checksum(sentences[0].c_str() );
           std::transform(tokens[12].begin(), tokens[12].end(), tokens[12].begin(), ::tolower);
@@ -244,8 +248,12 @@ int main(int argc, char** argv)
           tm_time.tm_min = m;
           tm_time.tm_sec = s;
   
-          time_t timestamp_int = mktime(&tm_time) + 2*SEC_IN_HOUR  - DELTA_SEC_EPOCH;         // mktime converts from local time to gmt so we add one hour explicitly
-          timestamp = timestamp_int + nano/1e2;          
+#ifdef __GNUC__
+          time_t timestamp_int = mktime(&tm_time) + 2 * SEC_IN_HOUR - DELTA_SEC_EPOCH;        // mktime converts from local time to gmt so we add one hour explicitly
+#else
+          time_t timestamp_int = mktime(&tm_time) + SEC_IN_HOUR - DELTA_SEC_EPOCH;        // mktime converts from local time to gmt so we add one hour explicitly
+#endif
+          timestamp = timestamp_int + nano/1e2;
 
           ss << std::hex << checksum(file_sentences[i][0].c_str() );
           std::transform(file_tokens[i][13].begin(), file_tokens[i][13].end(), file_tokens[i][13].begin(), ::tolower);
@@ -303,7 +311,11 @@ int main(int argc, char** argv)
         tm_time.tm_min = m;
         tm_time.tm_sec = s;
 
-        time_t timestamp_int = mktime(&tm_time) + 2*SEC_IN_HOUR - DELTA_SEC_EPOCH;        // mktime converts from local time to gmt so we add one hour explicitly
+#ifdef __GNUC__
+        time_t timestamp_int = mktime(&tm_time) + 2 * SEC_IN_HOUR - DELTA_SEC_EPOCH;        // mktime converts from local time to gmt so we add one hour explicitly
+#else
+        time_t timestamp_int = mktime(&tm_time) + SEC_IN_HOUR - DELTA_SEC_EPOCH;        // mktime converts from local time to gmt so we add one hour explicitly
+#endif
         timestamp = timestamp_int + nano/1e2;
 
 
