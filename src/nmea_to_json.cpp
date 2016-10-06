@@ -31,7 +31,7 @@ using namespace jsoncons;
 using namespace boost::algorithm;
 
 #define MAJOR_VERSION          3
-#define MINOR_VERSION          4
+#define MINOR_VERSION          5
 
 #define DELTA_SEC_EPOCH           946684800                              // seconds from 1/1/1970:00:00:00 to 31/12/1999:23:59:59
 #define SEC_IN_HOUR               3600
@@ -44,18 +44,16 @@ int checksum(const char *s) {
 }
 
 void usage(char * progname){
-  std::cout << "Usage: " << progname << " -i [input] -o [output.json] -f [output format specifier] -d [date]" << std::endl;
-  std::cout << "\t- [input] NMEA encoded ascii file to parse" << std::endl;
-  std::cout << "\t- [output.json] json location to store parsed file" << std::endl;
-  std::cout << "\t- [format specifier optional] use 'a' (without quotes) for array json, 'o' for object json" << std::endl;
-  std::cout << "\t- [date] enter input date in the format YYYYMMDD" << std::endl;
-  exit(1);
+  std::cerr << "Usage: " << progname << " -i [input] -o [output.json] -f [output format specifier] -d [date]" << std::endl;
+  std::cerr << "\t- [input] NMEA encoded ascii file to parse" << std::endl;
+  std::cerr << "\t- [output.json] json location to store parsed file" << std::endl;
+  std::cerr << "\t- [format specifier optional] use 'a' (without quotes) for array json, 'o' for object json" << std::endl;
+  std::cerr << "\t- [date] enter input date in the format YYYYMMDD" << std::endl;
 }
 
 int main(int argc, char** argv)
 {
-  // Usage
-  std::cout << "Nmea_to_Json v" << MAJOR_VERSION << "." << MINOR_VERSION << std::endl;
+  std::cout << "nmea_to_json v" << MAJOR_VERSION << "." << MINOR_VERSION << std::endl;
 
   // Parsing command line
   std::string input_name, output_name, outjson_type{}, date;
@@ -76,19 +74,22 @@ int main(int argc, char** argv)
           date = argv[++i];
           break;
         default:    // no match...
-          std::cout << "Flag \"" << argv[i] << "\" not recognized. Quitting..." << std::endl;
+          std::cerr << "Flag \"" << argv[i] << "\" not recognized. Quitting..." << std::endl;
           usage(argv[0]);
+          exit(-1);
         }
       }
       else {
-        std::cout << "Flag \"" << argv[i] << "\" not recognized. Quitting..." << std::endl;
+        std::cerr << "Flag \"" << argv[i] << "\" not recognized. Quitting..." << std::endl;
         usage(argv[0]);
+        exit(-2);
       }
     }
   }
   else {
-    std::cout << "ERROR : No flags specified." << std::endl;
+    std::cerr << "ERROR : No flags specified." << std::endl;
     usage(argv[0]);
+    exit(-3);
   }
 
   // Setting date in struct tm
@@ -104,29 +105,29 @@ int main(int argc, char** argv)
   // Safety checks for file manipulations
   std::ifstream input_file;
   if (input_name == ""){
-    std::cout << "INPUT file missing. Quitting..." << std::endl;
-    exit(2);
+    std::cerr << "INPUT file missing. Quitting..." << std::endl;
+    exit(-4);
   }
   input_file.open(input_name.c_str(), std::ios::binary);
   if (!input_file.is_open()) {
-    std::cout << "FAILED: Input file " << input_name << " could not be opened." << std::endl;
-    exit(22);
+    std::cerr << "FAILED: Input file " << input_name << " could not be opened." << std::endl;
+    exit(-5);
   }
   else std::cout << "SUCCESS: file " << input_name << " opened!" << std::endl;
 
   if (output_name.size() > 5){
     if (output_name.substr(output_name.size() - 5, 5) != ".json"){
-      std::cout << output_name << " is not a valid .json file. Quitting..." << std::endl;
-      exit(3);
+      std::cerr << output_name << " is not a valid .json file. Quitting..." << std::endl;
+      exit(-6);
     }
   }
   else {
-    std::cout << output_name << " is not a valid .json file. Quitting..." << std::endl;
-    exit(33);
+    std::cerr << output_name << " is not a valid .json file. Quitting..." << std::endl;
+    exit(-7);
   }
   if( date == "" ){
-    std::cout << "No DATE specified. Quitting..." << std::endl;
-    exit(333);
+    std::cerr << "No DATE specified. Quitting..." << std::endl;
+    exit(-8);
   }
 
   // NMEA parser
@@ -142,8 +143,8 @@ int main(int argc, char** argv)
     outjson = jsoncons::json(jsoncons::json::an_array);
   else if(outjson_type == "o" || outjson_type == "") {} //object or omitted
   else {
-    std::cout << "Output type not recognized. Quitting..." << std::endl;
-    exit(4);
+    std::cerr << "Output type not recognized. Quitting..." << std::endl;
+    exit(-9);
   }
 
   // try with standard GPRMC
@@ -354,18 +355,15 @@ int main(int argc, char** argv)
     std::ofstream output_file;
     output_file.open(output_name.c_str());
     if (!output_file.is_open()) {
-      std::cout << "FAILED: Output file " << output_name << " could not be opened." << std::endl;
-      std::cout << "Type q to quit or any other character to have a fallback output on stdout." << std::endl;
-      char q;
-      std::cin >> q;
-      if (q == 'q') exit(333);
-      else std::cout << pretty_print(outjson) << std::endl;
+      std::cerr << "FAILED: Output file " << output_name << " could not be opened." << std::endl;
+      std::cerr << "Output will be redirected on stdout." << std::endl;
+      std::cout << pretty_print(outjson) << std::endl;
     }
     else std::cout << "SUCCESS: file " << output_name << " opened!" << std::endl;
     output_file << pretty_print(outjson) << std::endl;
     output_file.close();
   }
-  else std::cout << "No valid NMEA $--RMC nor $GNGGA data found" << std::endl;
+  else std::cerr << "No valid NMEA $--RMC nor $GNGGA data found in " << input_name << std::endl;
 
   input_file.close();
 
