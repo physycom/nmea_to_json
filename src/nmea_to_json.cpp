@@ -31,19 +31,19 @@ using namespace jsoncons;
 using namespace boost::algorithm;
 
 #define MAJOR_VERSION          3
-#define MINOR_VERSION          5
+#define MINOR_VERSION          6
 
 #define DELTA_SEC_EPOCH           946684800                              // seconds from 1/1/1970:00:00:00 to 31/12/1999:23:59:59
 #define SEC_IN_HOUR               3600
 #define DELTA_H_UTC_TO_ROME       1
 
 int checksum(const char *s) {
-    int c = 0;
-    while(*s)  c ^= *s++;
-    return c;
+  int c = 0;
+  while (*s)  c ^= *s++;
+  return c;
 }
 
-void usage(char * progname){
+void usage(char * progname) {
   std::cerr << "Usage: " << progname << " -i [input] -o [output.json] -f [output format specifier] -d [date]" << std::endl;
   std::cerr << "\t- [input] NMEA encoded ascii file to parse" << std::endl;
   std::cerr << "\t- [output.json] json location to store parsed file" << std::endl;
@@ -57,10 +57,10 @@ int main(int argc, char** argv)
 
   // Parsing command line
   std::string input_name, output_name, outjson_type{}, date;
-  if (argc > 2){ /* Parse arguments, if there are arguments supplied */
-    for (int i = 1; i < argc; i++){
-      if ((argv[i][0] == '-') || (argv[i][0] == '/')){       // switches or options...
-        switch (tolower(argv[i][1])){
+  if (argc > 2) { /* Parse arguments, if there are arguments supplied */
+    for (int i = 1; i < argc; i++) {
+      if ((argv[i][0] == '-') || (argv[i][0] == '/')) {       // switches or options...
+        switch (tolower(argv[i][1])) {
         case 'i':
           input_name = argv[++i];
           break;
@@ -99,12 +99,12 @@ int main(int argc, char** argv)
   datev.push_back(date.substr(4, 2));
   datev.push_back(date.substr(6, 2));
   tm_time.tm_year = atoi(datev[0].c_str()) - 1900;
-  tm_time.tm_mon = atoi(datev[1].c_str())-1;
+  tm_time.tm_mon = atoi(datev[1].c_str()) - 1;
   tm_time.tm_mday = atoi(datev[2].c_str());
 
   // Safety checks for file manipulations
   std::ifstream input_file;
-  if (input_name == ""){
+  if (input_name == "") {
     std::cerr << "INPUT file missing. Quitting..." << std::endl;
     exit(-4);
   }
@@ -115,8 +115,8 @@ int main(int argc, char** argv)
   }
   else std::cout << "SUCCESS: file " << input_name << " opened!" << std::endl;
 
-  if (output_name.size() > 5){
-    if (output_name.substr(output_name.size() - 5, 5) != ".json"){
+  if (output_name.size() > 5) {
+    if (output_name.substr(output_name.size() - 5, 5) != ".json") {
       std::cerr << output_name << " is not a valid .json file. Quitting..." << std::endl;
       exit(-6);
     }
@@ -125,7 +125,7 @@ int main(int argc, char** argv)
     std::cerr << output_name << " is not a valid .json file. Quitting..." << std::endl;
     exit(-7);
   }
-  if( date == "" ){
+  if (date == "") {
     std::cerr << "No DATE specified. Quitting..." << std::endl;
     exit(-8);
   }
@@ -135,13 +135,13 @@ int main(int argc, char** argv)
   int gps_record_counter = 0;
   std::stringstream ss;
   std::string record_name;
-  int h, m ,s, nano; 
+  int h, m, s, nano;
 
   json outjson;
   // decide output type
-  if(outjson_type == "a") //array
+  if (outjson_type == "a") //array
     outjson = jsoncons::json(jsoncons::json::an_array);
-  else if(outjson_type == "o" || outjson_type == "") {} //object or omitted
+  else if (outjson_type == "o" || outjson_type == "") {} //object or omitted
   else {
     std::cerr << "Output type not recognized. Quitting..." << std::endl;
     exit(-9);
@@ -162,7 +162,7 @@ int main(int argc, char** argv)
     split(tokens, line, is_any_of(",*\n"), token_compress_off);
     split(sentences, line, is_any_of("*"), token_compress_off);
 
-    if ( tokens.size() > 0 ){
+    if (tokens.size() > 0) {
       if (tokens[0] == "GPRMC") {
         //if ( tokens[2] == "V") continue;            // "Void" code -> data rejected
         if (tokens[2] == "A") {                       // "Accept" code
@@ -172,35 +172,35 @@ int main(int argc, char** argv)
           //lon = stod(tokens[5].substr(0,2)) + stod(tokens[5].substr(2))/60.0;
 
           int lati, loni;
-          lati = atoi(tokens[3].c_str())/100;
-          loni = atoi(tokens[5].c_str())/100;
-          lat = atof(tokens[3].c_str())/100.0 - (double)lati;
-          lat /= 60.0/100.0;
-          lat += (double) lati;
-          lon = atof(tokens[5].c_str())/100.0 - (double)loni;
-          lon /= 60.0/100.0;
-          lon += (double) loni;
+          lati = atoi(tokens[3].c_str()) / 100;
+          loni = atoi(tokens[5].c_str()) / 100;
+          lat = atof(tokens[3].c_str()) / 100.0 - (double)lati;
+          lat /= 60.0 / 100.0;
+          lat += (double)lati;
+          lon = atof(tokens[5].c_str()) / 100.0 - (double)loni;
+          lon /= 60.0 / 100.0;
+          lon += (double)loni;
 
           timestamp = atof(tokens[1].c_str());
-          h = int(timestamp/1e4);
-          m = int((timestamp-h*1e4)/1e2);
-          s = int((timestamp-h*1e4-m*1e2));
-          nano = int((timestamp-h*1e4-m*1e2-s)*1e2);
-  
+          h = int(timestamp / 1e4);
+          m = int((timestamp - h*1e4) / 1e2);
+          s = int((timestamp - h*1e4 - m*1e2));
+          nano = int((timestamp - h*1e4 - m*1e2 - s)*1e2);
+
           tm_time.tm_hour = h;
           tm_time.tm_min = m;
           tm_time.tm_sec = s;
-  
+
 #ifdef __GNUC__
           time_t timestamp_int = mktime(&tm_time) + 2 * SEC_IN_HOUR - DELTA_SEC_EPOCH;        // mktime converts from local time to gmt so we add one hour explicitly
 #else
           time_t timestamp_int = mktime(&tm_time) + SEC_IN_HOUR - DELTA_SEC_EPOCH;        // mktime converts from local time to gmt so we add one hour explicitly
 #endif
-          timestamp = timestamp_int + nano/1e2;
+          timestamp = timestamp_int + nano / 1e2;
 
-          ss << std::hex << checksum(sentences[0].c_str() );
+          ss << std::hex << checksum(sentences[0].c_str());
           std::transform(tokens[12].begin(), tokens[12].end(), tokens[12].begin(), ::tolower);
-          if ( tokens[12].compare( ss.str() ) ){
+          if (tokens[12].compare(ss.str())) {
             gps_record_counter++;
             json ijson;
             ijson["description"] = sentences[0];
@@ -213,9 +213,9 @@ int main(int argc, char** argv)
             ss << std::setfill('0') << std::setw(7) << gps_record_counter;
             record_name = "gps_record_" + ss.str();
 
-            if(outjson.is_array()) outjson.add(ijson);
+            if (outjson.is_array()) outjson.add(ijson);
             else outjson[record_name] = ijson;
-          } 
+          }
         }
       }
       file_tokens.push_back(tokens);
@@ -229,36 +229,43 @@ int main(int argc, char** argv)
   // $GNRMC,140502.20,A,4430.12967,N,01121.89356,E,7.201,56.95,300615,,,A*40
   if (!gps_record_counter) {
     std::cout << "No valid $GPRMC NMEA data, falling back to $GNRMC" << std::endl;
-    for(size_t i=0; i < file_tokens.size(); i++){
+    for (size_t i = 0; i < file_tokens.size(); i++) {
       ss.str("\0");
       ss.seekp(0, std::ios::beg);
 
       if (file_tokens[i][0] == "GNRMC") {
         if (file_tokens[i][2] == "A") {
           double lat, lon, timestamp;
-          lat = 1e-2*atof(file_tokens[i][3].c_str());
-          lon = 1e-2*atof(file_tokens[i][5].c_str());
+          int lati, loni;
+          lati = atoi(file_tokens[i][3].c_str()) / 100;
+          loni = atoi(file_tokens[i][5].c_str()) / 100;
+          lat = atof(file_tokens[i][3].c_str()) / 100.0 - (double)lati;
+          lat /= (60.0 / 100.0);
+          lat += (double)lati;
+          lon = atof(file_tokens[i][5].c_str()) / 100.0 - (double)loni;
+          lon /= (60.0 / 100.0);
+          lon += (double)loni;
 
           timestamp = atof(file_tokens[i][1].c_str());
-          h = int(timestamp/1e4);
-          m = int((timestamp-h*1e4)/1e2);
-          s = int((timestamp-h*1e4-m*1e2));
-          nano = int((timestamp-h*1e4-m*1e2-s)*1e2);
-  
+          h = int(timestamp / 1e4);
+          m = int((timestamp - h*1e4) / 1e2);
+          s = int((timestamp - h*1e4 - m*1e2));
+          nano = int((timestamp - h*1e4 - m*1e2 - s)*1e2);
+
           tm_time.tm_hour = h;
           tm_time.tm_min = m;
           tm_time.tm_sec = s;
-  
+
 #ifdef __GNUC__
           time_t timestamp_int = mktime(&tm_time) + 2 * SEC_IN_HOUR - DELTA_SEC_EPOCH;        // mktime converts from local time to gmt so we add one hour explicitly
 #else
           time_t timestamp_int = mktime(&tm_time) + SEC_IN_HOUR - DELTA_SEC_EPOCH;        // mktime converts from local time to gmt so we add one hour explicitly
 #endif
-          timestamp = timestamp_int + nano/1e2;
+          timestamp = timestamp_int + nano / 1e2;
 
-          ss << std::hex << checksum(file_sentences[i][0].c_str() );
+          ss << std::hex << checksum(file_sentences[i][0].c_str());
           std::transform(file_tokens[i][13].begin(), file_tokens[i][13].end(), file_tokens[i][13].begin(), ::tolower);
-          if ( file_tokens[i][13].compare( ss.str() ) ){
+          if (file_tokens[i][13].compare(ss.str())) {
             gps_record_counter++;
             json ijson;
             ijson["description"] = file_sentences[i][0];
@@ -271,9 +278,9 @@ int main(int argc, char** argv)
             ss << std::setfill('0') << std::setw(7) << gps_record_counter;
             record_name = "gps_record_" + ss.str();
 
-            if(outjson.is_array()) outjson.add(ijson);
+            if (outjson.is_array()) outjson.add(ijson);
             else outjson[record_name] = ijson;
-          } 
+          }
         }
       }
     }
@@ -283,9 +290,9 @@ int main(int argc, char** argv)
   // fallback to GNGGA
   // sample string
   // $GNGGA,135148.00,4429.97640,N,01121.21051,E,1,08,1.63,41.9,M,45.5,M,,*7F
-  if(!gps_record_counter){
+  if (!gps_record_counter) {
     std::cout << "No valid $GNRMC NMEA data, falling back to $GNGGA NMEA" << std::endl;
-    for(size_t i=0; i < file_tokens.size(); i++){
+    for (size_t i = 0; i < file_tokens.size(); i++) {
       ss.str("\0");
       ss.seekp(0, std::ios::beg);
 
@@ -293,20 +300,20 @@ int main(int argc, char** argv)
         double lat, lon, timestamp;
 
         int lati, loni;
-        lati = atoi(file_tokens[i][2].c_str())/100;
-        loni = atoi(file_tokens[i][4].c_str())/100;
-        lat = atof(file_tokens[i][2].c_str())/100.0 - (double)lati;
-        lat /= 60.0/100.0;
-        lat += (double) lati;
-        lon = atof(file_tokens[i][4].c_str())/100.0 - (double)loni;
-        lon /= 60.0/100.0;
-        lon += (double) loni;
+        lati = atoi(file_tokens[i][2].c_str()) / 100;
+        loni = atoi(file_tokens[i][4].c_str()) / 100;
+        lat = atof(file_tokens[i][2].c_str()) / 100.0 - (double)lati;
+        lat /= (60.0 / 100.0);
+        lat += (double)lati;
+        lon = atof(file_tokens[i][4].c_str()) / 100.0 - (double)loni;
+        lon /= (60.0 / 100.0);
+        lon += (double)loni;
 
         timestamp = atof(file_tokens[i][1].c_str());
-        h = int(timestamp/1e4);
-        m = int((timestamp-h*1e4)/1e2);
-        s = int((timestamp-h*1e4-m*1e2));
-        nano = int((timestamp-h*1e4-m*1e2-s)*1e2);
+        h = int(timestamp / 1e4);
+        m = int((timestamp - h*1e4) / 1e2);
+        s = int((timestamp - h*1e4 - m*1e2));
+        nano = int((timestamp - h*1e4 - m*1e2 - s)*1e2);
 
         tm_time.tm_hour = h;
         tm_time.tm_min = m;
@@ -317,25 +324,25 @@ int main(int argc, char** argv)
 #else
         time_t timestamp_int = mktime(&tm_time) + SEC_IN_HOUR - DELTA_SEC_EPOCH;        // mktime converts from local time to gmt so we add one hour explicitly
 #endif
-        timestamp = timestamp_int + nano/1e2;
+        timestamp = timestamp_int + nano / 1e2;
 
 
-//      std::cout << h << " " << m << "  " << s << "  " << nano  << "   " << timestamp_int <<  std::endl, fatto = true;   // in case of debug
+        //      std::cout << h << " " << m << "  " << s << "  " << nano  << "   " << timestamp_int <<  std::endl, fatto = true;   // in case of debug
 
-        ss << std::hex << checksum(file_sentences[i][0].c_str() );
+        ss << std::hex << checksum(file_sentences[i][0].c_str());
         std::transform(file_tokens[i][15].begin(), file_tokens[i][15].end(), file_tokens[i][15].begin(), ::tolower);
-        if ( file_tokens[i][15].compare( ss.str() ) ){
+        if (file_tokens[i][15].compare(ss.str())) {
           gps_record_counter++;
           json ijson;
           ijson["description"] = file_sentences[i][0];
           ijson["lat"] = lat;
           ijson["lon"] = lon;
           ijson["timestamp"] = timestamp;
-        
+
           std::stringstream human_time;
           human_time << tm_time.tm_mday << "/" << tm_time.tm_mon + 1 << "/" << tm_time.tm_year + 1900 << " "
-          << std::setw(2) << std::setfill('0') << tm_time.tm_hour + DELTA_H_UTC_TO_ROME << ":" << std::setw(2) << std::setfill('0') << tm_time.tm_min << ":"
-          << std::setw(2) << std::setfill('0') << tm_time.tm_sec << "." << std::setw(2) << std::setfill('0') << nano;
+            << std::setw(2) << std::setfill('0') << tm_time.tm_hour + DELTA_H_UTC_TO_ROME << ":" << std::setw(2) << std::setfill('0') << tm_time.tm_min << ":"
+            << std::setw(2) << std::setfill('0') << tm_time.tm_sec << "." << std::setw(2) << std::setfill('0') << nano;
           ijson["date"] = human_time.str();
 
           ss.str("\0");
@@ -343,9 +350,9 @@ int main(int argc, char** argv)
           ss << std::dec << std::setfill('0') << std::setw(7) << gps_record_counter;
           record_name = "gps_record_" + ss.str();
 
-          if(outjson.is_array()) outjson.add(ijson);
+          if (outjson.is_array()) outjson.add(ijson);
           else outjson[record_name] = ijson;
-        } 
+        }
       }
     }
     if (gps_record_counter) std::cout << "Found " << gps_record_counter << " gps record of type $GNGGA" << std::endl;
