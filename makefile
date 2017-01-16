@@ -1,7 +1,14 @@
 EXE = nmea_to_json.exe
 
 
-all:
-	$(CXX) -std=c++11 -Isrc -o $(EXE) src/nmea_to_json.cpp
+all: dirtree
+	$(CXX) -std=c++11 -Isrc/jsoncons/src -o bin/$(EXE) src/nmea_to_json.cpp
+
+dirtree:
+	@mkdir -p bin
+
 clean:
-	rm -rf *.exe *.o x64 Debug Release *.sdf *.ilk *.pdb *.iobj *.obj *.ipdb src/Debug src/Release src/x64
+	rm -f bin/$(EXE)
+
+cleanall:
+	rm -rf bin obj

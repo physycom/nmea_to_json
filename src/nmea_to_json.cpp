@@ -17,8 +17,6 @@ You should have received a copy of the GNU General Public License
 along with nmea_to_json. If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
-#define _SCL_SECURE_NO_WARNINGS
-
 #include <iostream>
 #include <string>
 
@@ -140,7 +138,7 @@ int main(int argc, char** argv)
   json outjson;
   // decide output type
   if (outjson_type == "a") //array
-    outjson = jsoncons::json(jsoncons::json::an_array);
+    outjson = jsoncons::json::array();
   else if (outjson_type == "o" || outjson_type == "") {} //object or omitted
   else {
     std::cerr << "Output type not recognized. Quitting..." << std::endl;
