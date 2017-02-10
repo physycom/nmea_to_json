@@ -1,18 +1,40 @@
-[![Build Status Master](https://travis-ci.org/physycom/nmea_to_json.png?branch=master)](https://travis-ci.org/physycom/nmea_to_json "master")
+---
+documentclass: physycomen
+title:  "nmea_to_json"
+author: "Di Cristina, Fabbri, Sinigardi"
+---
 
+<a href="http://www.physycom.unibo.it"> 
+<div class="image">
+<img src="https://cdn.rawgit.com/physycom/templates/697b327d/logo_unibo.png" width="90" height="90" alt="© Physics of Complex Systems Laboratory - Physics and Astronomy Department - University of Bologna"> 
+</div>
+</a>
+<a href="https://travis-ci.org/physycom/nmea_to_json"> 
+<div class="image">
+<img src="https://travis-ci.org/physycom/nmea_to_json.png?branch=master" width="90" height="20" alt="Build Status"> 
+</div>
+</a>
+<a href="https://ci.appveyor.com/project/cenit/nmea-to-json"> 
+<div class="image">
+<img src="https://ci.appveyor.com/api/projects/status/4kx364yve1g7ceoi?svg=true" width="90" height="20" alt="Build Status"> 
+</div>
+</a>
+
+### Purpose
+This tool has been written in order to convert NMEA data into our standard .json format for GNSS coordinates
 
 ### Installation
-**Make** and a **C++11** compatible compiler are required. Clone the repo and type ``make all`` in your favourite shell.
-
-Uses jsoncons library (https://github.com/danielaparker/jsoncons) and the boost C++ libraries (http://www.boost.org/).
+**make** and a **C++11** compatible compiler are required. Clone the repo and type ``make`` in your favourite shell.   
+There's also a **VS2015** solution avalaible.   
+Contains [jsoncons](https://github.com/danielaparker/jsoncons) as a git submodule, requires [boost]() to build.
 
 ### Usage
 ```
-nmea2json.exe -i input -o output.json -f [output style, 'a' (no quotes) for array or 'o' for object]
+nmea_to_json.exe -i input.txt -o output.json -f [output style, 'a' (no quotes) for array or 'o' for object]
 ```
-where *input* must be an existing NMEA ascii-encoded file while *output.json* is the name of the output archive.
+where `input.txt` must be an existing NMEA ASCII-encoded file while `output.json` is the name of the output file.
 
-The optional -f specifies the style of the output json file (see below for an example). If omitted, the object-style will be used.
+The optional -f specifies the style of the output .json file. If omitted, the object-style will be used.
 
 
 ### Input Samples
@@ -62,6 +84,4 @@ array-style:
 ]
 ```
 
-Brought to you with :heart: by:
-
-&copy; _Physics of Complex Systems Laboratory - Physics and Astronomy Department - University of Bologna_
+More details can be found in our technical description of the file formats (document still not published)
