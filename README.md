@@ -24,9 +24,12 @@ author: "Di Cristina, Fabbri, Sinigardi"
 This tool has been written in order to convert NMEA data into our standard .json format for GNSS coordinates
 
 ### Installation
-**make** and a **C++11** compatible compiler are required. Clone the repo and type ``make`` in your favourite shell.   
-There's also a **VS2015** solution avalaible.   
-Contains [jsoncons](https://github.com/danielaparker/jsoncons) as a git submodule, requires [boost]() to build.
+**CMake**, **boost** and a **C++11** compatible compiler are required. To build the executable, clone the repo and then type  
+```
+mkdir build ; cd build ; cmake .. ; cmake --build .
+```
+With CMake you can also deploy projects for the most common IDEs.  
+Contains [jsoncons](https://github.com/danielaparker/jsoncons) as a git submodule.
 
 ### Usage
 ```
@@ -84,4 +87,4 @@ array-style:
 ]
 ```
 
-More details can be found in our technical description of the file formats (document still not published)
+More details about file formats is available [here](https://github.com/physycom/file_format_specifications/blob/master/formati_file.md).

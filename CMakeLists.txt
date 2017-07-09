@@ -2,14 +2,11 @@ cmake_minimum_required (VERSION 3.1)
 project (nmea_to_json)
 set (CMAKE_CXX_STANDARD 11)
 
-### Set output directories on a per-configuration base
-# Single configuration
-set( CMAKE_RUNTIME_OUTPUT_DIRECTORY $ENV{HOME}/bin )
-# Multi configuration
+set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
     string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
     if( OUTPUTCONFIG STREQUAL "RELEASE" )
-    set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} $ENV{HOME}/bin )
+    set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_SOURCE_DIR}/bin )
     else()
     set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_SOURCE_DIR}/bin/${OUTPUTCONFIG} )
     endif()
